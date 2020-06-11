@@ -4,5 +4,5 @@ Repositório do projeto SimplePaint, que é uma aplicação de desenho desenvolv
 ### Screenshot da aplicação
 ![Image](https://raw.githubusercontent.com/wallacemariadeandrade/SimplePaint/master/simple_paint.PNG)
 
-Sinta-se livre para baixar e modificar a aplicação!
+Sinta-se livre para baixar e modificar!
 
