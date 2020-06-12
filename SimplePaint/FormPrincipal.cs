@@ -53,23 +53,24 @@ namespace SimplePaint
         // Serve para manipularmos o que acontece quando o clique ocorre
         private void buttonCorCaneta_Click(object sender, EventArgs e)
         {
-            var colorDialog = new ColorDialog(); // ColorDialog é uma caixa de seleção de cores
-            var corEscolhida = colorDialog.ShowDialog(); // Exibe na forma modal - aplicação fica travada enquanto o diálogo não é resolvido
-            if(corEscolhida == DialogResult.OK) // Veriica se usuário clicou mesmo em OK
+            // ColorDialog é uma janela para seleção de cores
+            // Através da diretiva using sinalizamos o .NET Framework que ele já pode 
+            // liberar os recursos de sistema que o objeto ColorDialog utiliza
+            using (var colorDialog = new ColorDialog())
             {
-                buttonCorCaneta.BackColor = colorDialog.Color; // Alteramos a cor do botão para a cor escolhida pelo usuário
+                // ShowDialog exibe a janela na forma modal - aplicação fica travada enquanto o diálogo não é resolvido
+                if (colorDialog.ShowDialog() == DialogResult.OK)
+                {
+                    buttonCorCaneta.BackColor = colorDialog.Color; // Alteramos a cor do botão para a cor escolhida pelo usuário
+                }
             }
         }
 
-        private void panelPintura_MouseDown(object sender, MouseEventArgs e)
-        {
-            flagPintar = true; // Quando usuário pressiona o botão do mouse sob o painel entendemos que ele quer pintar
-        }
+        // Quando usuário pressiona o botão do mouse sob o painel entendemos que ele quer pintar
+        private void panelPintura_MouseDown(object sender, MouseEventArgs e) => flagPintar = true;
 
-        private void panelPintura_MouseUp(object sender, MouseEventArgs e)
-        {
-            flagPintar = false; // Quando usuário solta o botão do mouse entendemos que ele não quer pintar
-        }
+        // Quando usuário solta o botão do mouse entendemos que ele não quer pintar
+        private void panelPintura_MouseUp(object sender, MouseEventArgs e) => flagPintar = false;
 
         private void panelPintura_MouseMove(object sender, MouseEventArgs e)
         {
@@ -77,23 +78,27 @@ namespace SimplePaint
             {
                 if(!flagApagar)
                 {
-                    // Desenhamos uma elipse de cor e espessura definida pelo usuário, nas coordenadas do ponteiro do mouse
-                    graphicsPainelPintura
-                        .DrawEllipse(new Pen(buttonCorCaneta.BackColor, espessuraCaneta), new RectangleF(e.X, e.Y, espessuraCaneta, espessuraCaneta));
-                    // Desenhando na imagem para salvar
-                    graphicsImagemASalvar
-                        .DrawEllipse(new Pen(buttonCorCaneta.BackColor, espessuraCaneta), new RectangleF(e.X, e.Y, espessuraCaneta, espessuraCaneta));
+                    DesenharElipse(graphicsPainelPintura, e.X, e.Y);
+                    DesenharElipse(graphicsImagemASalvar, e.X, e.Y);
                 }
                 else
                 {
-                    // Desenhamos uma elipse de cor e espessura definida pelo usuário, nas coordenadas do ponteiro do mouse
-                    graphicsPainelPintura
-                        .DrawRectangle(new Pen(corBorracha, espessuraCaneta), new Rectangle(e.X, e.Y, (int)espessuraCaneta, (int)espessuraCaneta)); // Transformamos uma variável tipo float em tipo inteiro
-                    // Desenhando na imagem para salvar
-                    graphicsImagemASalvar
-                        .DrawRectangle(new Pen(corBorracha, espessuraCaneta), new Rectangle(e.X, e.Y, (int)espessuraCaneta, (int)espessuraCaneta)); // Transformamos uma variável tipo float em tipo inteiro
+                    ApagarComRetangulo(graphicsPainelPintura, e.X, e.Y);
+                    ApagarComRetangulo(graphicsImagemASalvar, e.X, e.Y);
                 }
             }
+        }
+
+        private void DesenharElipse(Graphics g, float x, float y)
+        {
+            // Desenhamos uma elipse de cor e espessura definida pelo usuário, nas coordenadas do ponteiro do mouse
+            g.DrawEllipse(new Pen(buttonCorCaneta.BackColor, espessuraCaneta), new RectangleF(x, y, espessuraCaneta, espessuraCaneta));
+        }
+
+        private void ApagarComRetangulo(Graphics g, int x, int y)
+        {
+            // Desenhamos um retângulo com a cor da borracha e espessura escolhidas pelo usuário, nas coordenadas indicadas
+            g.DrawRectangle(new Pen(corBorracha, espessuraCaneta), new Rectangle(x, y, (int)espessuraCaneta, (int)espessuraCaneta)); // Transformamos uma variável tipo float em tipo inteiro
         }
 
         private void buttonLimpar_Click(object sender, EventArgs e)
@@ -141,19 +146,24 @@ namespace SimplePaint
 
         private void buttonSalvar_Click(object sender, EventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog(); // Janela para salvar arquivos
-            saveFileDialog.Filter = "Portable Network Graphics|.png|Arquivo JPEG|.jpeg"; // Atribuindo formatos de imagem para o usuário escolher
-            if(saveFileDialog.ShowDialog() == DialogResult.OK)
+            // Através da diretiva using sinalizamos o .NET Framework que ele já pode 
+            // liberar os recursos de sistema que o objeto SaveFileDialog utiliza
+            // Observe que já definimos as extensões permitidas para o arquivo a ser salvo
+            // logo na criação do objeto SaveFileDialog
+            using (var saveFileDialog = new SaveFileDialog() { Filter = "Portable Network Graphics|.png|Arquivo JPEG|.jpeg" })
             {
-                // Definindo a extensão da imagem que iremos salvar
-                switch(saveFileDialog.FilterIndex)
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    case 1:
-                        imagemASalvar.Save(saveFileDialog.FileName, ImageFormat.Png);
-                        break;
-                    case 2:
-                        imagemASalvar.Save(saveFileDialog.FileName, ImageFormat.Jpeg);
-                        break;
+                    // Definindo a extensão da imagem que iremos salvar
+                    switch (saveFileDialog.FilterIndex)
+                    {
+                        case 1:
+                            imagemASalvar.Save(saveFileDialog.FileName, ImageFormat.Png);
+                            break;
+                        case 2:
+                            imagemASalvar.Save(saveFileDialog.FileName, ImageFormat.Jpeg);
+                            break;
+                    }
                 }
             }
         }
